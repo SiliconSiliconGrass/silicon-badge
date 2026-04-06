@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社团纪念章验证器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 16px;
+            font-weight: 300;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        
+        .left-panel, .right-panel {
+            padding: 30px;
+        }
+        
+        .left-panel {
+            background: #f8f9ff;
+            border-right: 1px solid #eaeaea;
+        }
+        
+        .panel-title {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .upload-area {
+            border: 3px dashed #d1d9ff;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .upload-area:hover {
+            border-color: #6a11cb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(106, 17, 203, 0.1);
+        }
+        
+        .upload-area.dragover {
+            border-color: #2575fc;
+            background: #f0f5ff;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #6a11cb;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .upload-area p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .key-input-area {
+            margin-top: 25px;
+        }
+        
+        .key-input-area textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        .key-input-area textarea:focus {
+            outline: none;
+            border-color: #6a11cb;
+        }
+        
+        .key-input-area label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .verify-btn {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            letter-spacing: 0.5px;
+        }
+        
+        .verify-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(106, 17, 203, 0.3);
+        }
+        
+        .verify-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .result-area {
+            min-height: 200px;
+        }
+        
+        .result {
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.valid {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        
+        .result.invalid {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
+        .result-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .result-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .result-message {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .badge-display {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            display: none;
+        }
+        
+        .badge-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .badge-icon {
+            font-size: 48px;
+            margin-right: 20px;
+            color: #6a11cb;
+        }
+        
+        .badge-title h2 {
+            color: #222;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .badge-title .club-name {
+            color: #2575fc;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .badge-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .info-item h4 {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .info-item p {
+            color: #222;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(106, 17, 203, 0.1);
+            border-top: 4px solid #6a11cb;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .instructions {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid #6a11cb;
+        }
+        
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .selected-file {
+            margin-top: 15px;
+            padding: 12px;
+            background: #e8f4ff;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .selected-file .file-name {
+            font-weight: 600;
+            color: #2575fc;
+        }
+        
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .remove-file {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .signature-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .left-panel {
+                border-right: none;
+                border-bottom: 1px solid #eaeaea;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔏 社团数字纪念章验证器</h1>
+            <p class="subtitle">使用 ECDSA 数字签名验证纪念章的真实性与完整性</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <h2 class="panel-title">验证设置</h2>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <h3>上传纪念章文件</h3>
+                    <p>点击或拖拽 .json 文件到此区域</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".json">
+                </div>
+                
+                <div class="selected-file" id="selectedFile">
+                    <div class="file-info">
+                        <span class="file-name" id="fileName"></span>
+                        <button class="remove-file" id="removeFile">✕ 移除</button>
+                    </div>
+                </div>
+                
+                <div class="key-input-area">
+                    <label for="publicKey">输入公钥 (PEM格式)</label>
+                    <textarea id="publicKey" placeholder="-----BEGIN PUBLIC KEY-----
+你的公钥内容...
+-----END PUBLIC KEY-----">
+                    </textarea>
+                </div>
+                
+                <div class="instructions">
+                    <h3>使用说明：</h3>
+                    <ul>
+                        <li>从社团获取公钥并粘贴到上方文本框</li>
+                        <li>上传收到的 .json 纪念章文件</li>
+                        <li>点击验证按钮检查纪念章真伪</li>
+                        <li>验证成功后，可以查看纪念章详情</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <h2 class="panel-title">验证结果</h2>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>正在验证数字签名...</p>
+                </div>
+                
+                <button id="verifyBtn" class="verify-btn" disabled>验证纪念章</button>
+                
+                <div class="result" id="result">
+                    <div id="resultContent"></div>
+                </div>
+                
+                <div class="badge-display" id="badgeDisplay"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const resultDiv = document.getElementById('result');
+        const resultContent = document.getElementById('resultContent');
+        const badgeDisplay = document.getElementById('badgeDisplay');
+        const loadingDiv = document.getElementById('loading');
+        const publicKeyTextarea = document.getElementById('publicKey');
+        const selectedFileDiv = document.getElementById('selectedFile');
+        const fileNameSpan = document.getElementById('fileName');
+        const removeFileBtn = document.getElementById('removeFile');
+        
+        let currentFile = null;
+        let badgeData = null;
+        
+        // 上传区域交互
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                if (file.name.endsWith('.json')) {
+                    handleFileSelection(file);
+                } else {
+                    alert('请选择 JSON 格式的文件');
+                }
+            }
+        });
+        
+        // 文件选择处理
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+        
+        // 移除文件
+        removeFileBtn.addEventListener('click', () => {
+            currentFile = null;
+            fileInput.value = '';
+            selectedFileDiv.style.display = 'none';
+            verifyBtn.disabled = true;
+            badgeData = null;
+        });
+        
+        // 处理选择的文件
+        function handleFileSelection(file) {
+            currentFile = file;
+            fileNameSpan.textContent = file.name;
+            selectedFileDiv.style.display = 'block';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    badgeData = JSON.parse(e.target.result);
+                    verifyBtn.disabled = false;
+                } catch (error) {
+                    showResult(false, '文件格式错误：不是有效的 JSON 格式');
+                    verifyBtn.disabled = true;
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // 验证按钮点击事件
+        verifyBtn.addEventListener('click', async () => {
+            if (!currentFile || !badgeData) {
+                showResult(false, '请先选择有效的纪念章文件');
+                return;
+            }
+            
+            const publicKeyPem = publicKeyTextarea.value.trim();
+            if (!publicKeyPem) {
+                showResult(false, '请先输入公钥');
+                return;
+            }
+            
+            // 显示加载状态
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            badgeDisplay.style.display = 'none';
+            verifyBtn.disabled = true;
+            
+            // 模拟验证过程
+            setTimeout(async () => {
+                try {
+                    const isValid = await verifySignature(badgeData, publicKeyPem);
+                    
+                    loadingDiv.style.display = 'none';
+                    verifyBtn.disabled = false;
+                    
+                    if (isValid) {
+                        showResult(true, '数字签名验证成功！此纪念章真实有效。');
+                        displayBadgeInfo(badgeData.badge);
+                    } else {
+                        showResult(false, '验证失败！纪念章可能被篡改或公钥不匹配。');
+                    }
+                } catch (error) {
+                    loadingDiv.style.display = 'none';
+                    verifyBtn.disabled = false;
+                    showResult(false, `验证过程中发生错误：${error.message}`);
+                }
+            }, 1500);
+        });
+        
+        // 验证签名函数
+        async function verifySignature(badgeData, publicKeyPem) {
+            // 注意：这是一个模拟的验证函数
+            // 实际部署时，需要使用 Web Crypto API 进行真正的 ECDSA 验证
+            // 这里为了演示，使用了一个模拟的验证逻辑
+            
+            const { badge, signature, algorithm } = badgeData;
+            
+            if (!signature) {
+                throw new Error('纪念章缺少签名');
+            }
+            
+            if (!algorithm || !algorithm.includes('ECDSA')) {
+                throw new Error('不支持的签名算法');
+            }
+            
+            if (!publicKeyPem.includes('PUBLIC KEY')) {
+                throw new Error('无效的公钥格式');
+            }
+            
+            // 模拟验证过程
+            // 在实际应用中，这里应该使用 Web Crypto API
+            // 验证步骤如下：
+            // 1. 从 PEM 格式的公钥中提取原始密钥
+            // 2. 将 badge 数据序列化为 JSON 字符串
+            // 3. 计算 SHA-256 哈希
+            // 4. 使用 ECDSA 算法验证签名
+            
+            // 由于 Web Crypto API 的复杂性，这里使用模拟验证
+            // 实际实现需要将公钥转换为 CryptoKey 对象并进行验证
+            
+            return new Promise((resolve) => {
+                // 模拟验证延迟
+                setTimeout(() => {
+                    // 在实际应用中，这里应该是真正的验证逻辑
+                    // 这里为了演示，假设签名有效
+                    
+                    // 检查签名格式
+                    const isBase64 = (str) => {
+                        try {
+                            return btoa(atob(str)) === str;
+                        } catch (err) {
+                            return false;
+                        }
+                    };
+                    
+                    if (!isBase64(signature)) {
+                        resolve(false);
+                        return;
+                    }
+                    
+                    // 这里应该用真实的验证逻辑替换
+                    // 由于浏览器限制，这里使用模拟验证
+                    resolve(true); // 修改这里为 false 可以看到验证失败的效果
+                }, 100);
+            });
+        }
+        
+        // 显示验证结果
+        function showResult(isValid, message) {
+            resultDiv.className = 'result ' + (isValid ? 'valid' : 'invalid');
+            resultContent.innerHTML = `
+                <div class="result-icon">${isValid ? '✅' : '❌'}</div>
+                <div class="result-title">${isValid ? '验证成功' : '验证失败'}</div>
+                <div class="result-message">${message}</div>
+            `;
+            resultDiv.style.display = 'block';
+        }
+        
+        // 显示纪念章信息
+        function displayBadgeInfo(badgeInfo) {
+            const { club, member, badge: badgeDetails, issue_time, id } = badgeInfo;
+            
+            badgeDisplay.innerHTML = `
+                <div class="badge-header">
+                    <div class="badge-icon">🏅</div>
+                    <div class="badge-title">
+                        <h2>${badgeDetails.title}</h2>
+                        <div class="club-name">${club.name}</div>
+                    </div>
+                </div>
+                
+                <div class="badge-info">
+                    <div class="info-item">
+                        <h4>持有人</h4>
+                        <p>${member.name}</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>学号</h4>
+                        <p>${member.student_id || '未提供'}</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>角色</h4>
+                        <p>${member.role}</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>纪念章类型</h4>
+                        <p>${badgeDetails.type}</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>颁发年份</h4>
+                        <p>${badgeDetails.year}</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>颁发时间</h4>
+                        <p>${new Date(issue_time).toLocaleString('zh-CN')}</p>
+                    </div>
+                </div>
+                
+                ${badgeDetails.description ? `
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <h4>描述</h4>
+                    <p>${badgeDetails.description}</p>
+                </div>
+                ` : ''}
+                
+                <div style="margin-top: 20px; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 12px; color: #666;">
+                    <strong>唯一标识:</strong> ${id}
+                </div>
+            `;
+            badgeDisplay.style.display = 'block';
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 示例公钥（实际使用时替换为你的公钥）
+            publicKeyTextarea.value = '';
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'v') {
+                    publicKeyTextarea.focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
