@@ -38,7 +38,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18 # 匹配你的 Node.js 版本
+          node-version: 22 # 匹配你的 Node.js 版本
           cache: 'pnpm'
           cache-dependency-path: 'frontend/pnpm-lock.yaml'
 
