@@ -8,9 +8,8 @@ import json
 import base64
 import hashlib
 import sys
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 
@@ -36,18 +35,14 @@ def verify_badge(badge_file: str, public_key_path: str = "keys/public_key.pem"):
     # 规范化JSON字符串（必须与签名时完全一致）
     json_str = json.dumps(badge_info, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
     
-    # 计算哈希
-    digest = hashlib.sha256(json_str.encode('utf-8')).digest()
-    
     # 解码签名
     signature_bytes = base64.b64decode(signature_b64)
     
-    # 验证签名
+    # 验证签名（Ed25519会自动处理哈希）
     try:
         public_key.verify(
             signature_bytes,
-            digest,
-            ec.ECDSA(hashes.SHA256())
+            json_str.encode('utf-8')
         )
         return True, badge_info
     except InvalidSignature:

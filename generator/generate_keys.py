@@ -1,26 +1,23 @@
 """
-生成 ECDSA 密钥对
+生成 Ed25519 密钥对
 运行: python generate_keys.py
 """
 import os
 from pathlib import Path
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.backends import default_backend
 
 curr_dir = Path(__file__).parent
 
 def generate_key_pair():
-    """生成 ECDSA 密钥对 (secp256k1)"""
+    """生成 Ed25519 密钥对"""
     
     # 确保输出目录存在
     os.makedirs("keys", exist_ok=True)
     
     # 生成私钥
-    private_key = ec.generate_private_key(
-        ec.SECP256K1(),  # 使用 secp256k1 曲线
-        default_backend()
-    )
+    private_key = ed25519.Ed25519PrivateKey.generate()
     
     # 序列化私钥
     private_pem = private_key.private_bytes(
@@ -54,19 +51,19 @@ def generate_key_pair():
     with open(key_dir / "public_key.pem", "wb") as f:
         f.write(public_pem)
     
-    # 生成公钥的压缩版（用于嵌入HTML）
-    compressed_pubkey = public_key.public_bytes(
-        encoding=serialization.Encoding.X962,
-        format=serialization.PublicFormat.CompressedPoint
+    # 生成公钥的原始字节（用于嵌入HTML）
+    public_key_bytes = public_key.public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw
     )
     
     with open(key_dir / "public_key_hex.txt", "w") as f:
-        f.write(compressed_pubkey.hex())
+        f.write(public_key_bytes.hex())
     
     print("✅ 密钥对生成成功！")
     print(f"   私钥: {(key_dir / "private_key.pem").absolute()} (请妥善保存，切勿泄露！)")
     print(f"   公钥: {(key_dir / "public_key.pem").absolute()}")
-    print(f"   公钥(压缩): {(key_dir / "public_key_hex.txt").absolute()}")
+    print(f"   公钥(原始): {(key_dir / "public_key_hex.txt").absolute()}")
     print("\n⚠️  请务必备份 private_key.pem，一旦丢失，所有签发的纪念章将无法验证！")
 
 if __name__ == "__main__":

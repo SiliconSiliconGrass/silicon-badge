@@ -8,10 +8,10 @@ import json
 import hashlib
 import base64
 import uuid
+import os
 from datetime import datetime
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 
@@ -26,19 +26,13 @@ class BadgeGenerator:
             )
     
     def sign_data(self, data: dict) -> str:
-        """为数据生成ECDSA签名"""
+        """为数据生成Ed25519签名"""
         
         # 将数据转为规范化JSON字符串（确保空格、排序一致）
         json_str = json.dumps(data, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
         
-        # 计算SHA-256哈希
-        digest = hashlib.sha256(json_str.encode('utf-8')).digest()
-        
-        # 使用私钥签名
-        signature = self.private_key.sign(
-            digest,
-            ec.ECDSA(hashes.SHA256())
-        )
+        # 使用私钥签名（Ed25519会自动处理哈希）
+        signature = self.private_key.sign(json_str.encode('utf-8'))
         
         # 将签名转为Base64字符串
         return base64.b64encode(signature).decode('utf-8')
@@ -69,7 +63,7 @@ class BadgeGenerator:
         return {
             "badge": badge_data,
             "signature": signature,
-            "algorithm": "ECDSA-SHA256-secp256k1"
+            "algorithm": "Ed25519"
         }
     
     def save_badge(self, badge_data: dict, filename: str = None):
