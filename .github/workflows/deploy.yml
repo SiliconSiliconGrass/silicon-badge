@@ -1,0 +1,68 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  # 监听 main 分支的推送事件，你也可以根据习惯改为 master
+  push:
+    branches: ["main"]
+  # 允许在 GitHub 仓库的 Actions 标签页手动触发
+  workflow_dispatch:
+
+# 设置 GITHUB_TOKEN 的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 确保只进行一次并发部署
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. 设置 pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9 # 匹配你的 pnpm 版本
+
+      # 2. 设置 Node.js 并启用 pnpm 缓存
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18 # 匹配你的 Node.js 版本
+          cache: 'pnpm'
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
+
+      # 3. 安装依赖 (注意路径在 frontend 下)
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: pnpm install
+
+      # 4. 构建项目 (注意路径在 frontend 下)
+      - name: Build
+        working-directory: ./frontend
+        run: pnpm run build
+
+      # 5. 配置 Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # 6. 上传构建产物 (路径指向 frontend/dist)
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './frontend/dist'
+
+      # 7. 部署到 GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
