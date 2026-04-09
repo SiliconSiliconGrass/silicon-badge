@@ -29,7 +29,7 @@ class BadgeGenerator:
         """为数据生成ECDSA签名"""
         
         # 将数据转为规范化JSON字符串（确保空格、排序一致）
-        json_str = json.dumps(data, sort_keys=True, separators=(',', ':'))
+        json_str = json.dumps(data, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
         
         # 计算SHA-256哈希
         digest = hashlib.sha256(json_str.encode('utf-8')).digest()
@@ -51,21 +51,15 @@ class BadgeGenerator:
             "version": "1.0",
             "id": str(uuid.uuid4()),  # 唯一ID
             "issue_time": datetime.utcnow().isoformat() + "Z",
-            "club": {
-                "name": member_info.get("club_name", "未命名社团"),
-                "id": member_info.get("club_id", "CLUB_001")
-            },
-            "member": {
-                "name": member_info["name"],
-                "student_id": member_info.get("student_id", ""),
-                "role": member_info.get("role", "成员")
-            },
-            "badge": {
-                "type": member_info.get("badge_type", "普通纪念章"),
-                "title": member_info.get("badge_title", "社团纪念章"),
-                "description": member_info.get("description", ""),
-                "year": datetime.now().year
-            }
+            "club_name": member_info.get("club_name", "未命名社团"),
+            "club_id": member_info.get("club_id", "CLUB_001"),
+            "member_name": member_info["name"],
+            "member_student_id": member_info.get("student_id", ""),
+            "member_role": member_info.get("role", "成员"),
+            "badge_type": member_info.get("badge_type", "普通纪念章"),
+            "badge_title": member_info.get("badge_title", "社团纪念章"),
+            "badge_description": member_info.get("description", ""),
+            "badge_year": datetime.now().year
         }
         
         # 生成签名
@@ -82,7 +76,7 @@ class BadgeGenerator:
         """保存纪念章到文件"""
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            member_name = badge_data["badge"]["member"]["name"]
+            member_name = badge_data["badge"]["member_name"]
             filename = f"badges/{member_name}_{timestamp}.json"
         
         os.makedirs("badges", exist_ok=True)
@@ -132,6 +126,7 @@ if __name__ == "__main__":
     badge = generator.generate_badge(member_info)
     
     # 保存文件
+    print(badge)
     filename = generator.save_badge(badge)
     
     print(f"\n🎉 纪念章生成完成！")

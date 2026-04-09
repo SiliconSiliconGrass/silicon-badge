@@ -31,9 +31,10 @@ def verify_badge(badge_file: str, public_key_path: str = "keys/public_key.pem"):
             f.read(),
             backend=default_backend()
         )
+        
     
     # 规范化JSON字符串（必须与签名时完全一致）
-    json_str = json.dumps(badge_info, sort_keys=True, separators=(',', ':'))
+    json_str = json.dumps(badge_info, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
     
     # 计算哈希
     digest = hashlib.sha256(json_str.encode('utf-8')).digest()
@@ -59,15 +60,15 @@ def display_badge_info(badge_info: dict):
     print("\n" + "="*50)
     print("🏅 纪念章验证结果")
     print("="*50)
-    print(f"持有人: {badge_info['member']['name']}")
-    print(f"学号: {badge_info['member']['student_id'] or '未设置'}")
-    print(f"角色: {badge_info['member']['role']}")
-    print(f"社团: {badge_info['club']['name']}")
-    print(f"纪念章: {badge_info['badge']['title']}")
-    print(f"类型: {badge_info['badge']['type']}")
-    print(f"年份: {badge_info['badge']['year']}")
-    if badge_info['badge']['description']:
-        print(f"描述: {badge_info['badge']['description']}")
+    print(f"持有人: {badge_info['member_name']}")
+    print(f"学号: {badge_info['member_student_id'] or '未设置'}")
+    print(f"角色: {badge_info['member_role']}")
+    print(f"社团: {badge_info['club_name']}")
+    print(f"纪念章: {badge_info['badge_title']}")
+    print(f"类型: {badge_info['badge_type']}")
+    print(f"年份: {badge_info['badge_year']}")
+    if badge_info['badge_description']:
+        print(f"描述: {badge_info['badge_description']}")
     print(f"颁发时间: {badge_info['issue_time']}")
     print(f"唯一ID: {badge_info['id']}")
     print("="*50)
