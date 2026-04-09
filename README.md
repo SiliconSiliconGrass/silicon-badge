@@ -1,22 +1,22 @@
 # Silicon Badge
 
-一个基于 ECDSA 签名的社团纪念章生成与验证仓库。项目包含密钥生成、纪念章生成、JSON 签名验证以及一个浏览器端验证 UI 演示页面。
+一个基于 Ed25519 签名的社团纪念章生成与验证仓库。项目包含密钥生成、纪念章生成、JSON 签名验证以及一个浏览器端验证 UI 演示页面。
 
 ## 主要功能
 
-- `generator/generate_keys.py`：生成 ECDSA 密钥对（secp256k1），输出 `private_key.pem` 和 `public_key.pem`，并生成压缩公钥十六进制文件。
+- `generator/generate_keys.py`：生成 Ed25519 密钥对，输出 `private_key.pem` 和 `public_key.pem`，并生成公钥十六进制文件。
 - `generator/generate_badge.py`：读取私钥，生成带签名的纪念章 JSON 文件。
-- `generator/verify_badge.py`：使用公钥验证纪念章 JSON 文件中的 ECDSA 签名。
-- `frontend/index.html`：社团纪念章验证器页面示例，支持上传 `.json` 纪念章文件并输入 PEM 格式公钥进行演示验证。
+- `generator/verify_badge.py`：使用公钥验证纪念章 JSON 文件中的 Ed25519 签名。
+- `frontend/`：基于 Vue 3 的社团纪念章验证器页面，支持上传 `.json` 纪念章文件进行验证。
 
 ## 原理简介
 
-本仓库采用 ECDSA 数字签名保护纪念章数据完整性：
+本仓库采用 Ed25519 数字签名保护纪念章数据完整性：
 
-1. 通过 `generate_keys.py` 生成一对 ECDSA 密钥。
-2. `generate_badge.py` 将纪念章原始数据规范化为排序后的 JSON 字符串，并对其 SHA-256 哈希进行私钥签名。
+1. 通过 `generate_keys.py` 生成一对 Ed25519 密钥。
+2. `generate_badge.py` 将纪念章原始数据规范化为排序后的 JSON 字符串，并对其进行私钥签名。
 3. 纪念章数据与签名一起保存为 JSON 文件。
-4. `verify_badge.py` 读取 JSON、重新规范化 badge 数据、计算哈希，并使用公钥验证签名是否有效。
+4. `verify_badge.py` 读取 JSON、重新规范化 badge 数据，并使用公钥验证签名是否有效。
 
 这种方式可以保证：
 
@@ -26,8 +26,8 @@
 
 ## 目录结构
 
-- `frontend/index.html`：前端验证器页面。
-- `generator/generate_keys.py`：生成 ECDSA 密钥对。
+- `frontend/`：基于 Vue 3 的前端验证器页面。
+- `generator/generate_keys.py`：生成 Ed25519 密钥对。
 - `generator/generate_badge.py`：生成带签名的纪念章 JSON。
 - `generator/verify_badge.py`：验证纪念章签名。
 - `generator/pyproject.toml`：Python 项目依赖声明。
@@ -36,30 +36,36 @@
 
 ## 环境要求
 
+### Python 部分
 - Python 3.12+
+- `uv` 包管理工具
 - `cryptography` 库
+
+### 前端部分
+- Node.js 18+
+- `pnpm` 包管理工具
 
 ## 安装步骤
 
+### Python 部分
+
 ```bash
 cd generator
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install cryptography
+uv sync
 ```
 
-如果你不想使用虚拟环境，也可以直接安装：
+### 前端部分
 
 ```bash
-python3 -m pip install cryptography
+cd frontend
+pnpm install
 ```
 
 ## 生成密钥对
 
 ```bash
 cd generator
-python generate_keys.py
+uv run python generate_keys.py
 ```
 
 执行后，会在 `generator/keys/` 目录中生成：
@@ -74,7 +80,7 @@ python generate_keys.py
 
 ```bash
 cd generator
-python generate_badge.py
+uv run python generate_badge.py
 ```
 
 脚本会提示输入：
@@ -95,20 +101,26 @@ python generate_badge.py
 
 ```bash
 cd generator
-python verify_badge.py badges/<your_badge_file>.json keys/public_key.pem
+uv run python verify_badge.py badges/<your_badge_file>.json keys/public_key.pem
 ```
 
 如果签名有效，脚本会输出验证通过和纪念章信息；否则会提示验证失败。
 
-## 浏览器端演示验证
+## 浏览器端验证
 
-打开 `frontend/index.html`，然后：
+启动前端开发服务器：
 
-1. 将 `generator/keys/public_key.pem` 的内容复制到页面中的公钥输入框。
-2. 上传生成的纪念章 JSON 文件。
-3. 点击“验证纪念章”查看结果。
+```bash
+cd frontend
+pnpm dev
+```
 
-> 当前前端页面为演示版本，主要展示验证流程 UI。实际生产环境建议使用 Web Crypto API 或后端签名验证实现完整的 ECDSA 验证。
+然后在浏览器中打开提示的地址（通常是 http://localhost:5173/），然后：
+
+1. 上传生成的纪念章 JSON 文件。
+2. 系统会自动验证纪念章的有效性并显示结果。
+
+> 前端页面已集成公钥验证逻辑，使用 Web Crypto API 实现 Ed25519 验证。
 
 ## 注意事项
 
