@@ -58,8 +58,8 @@ function handleSelectedFile(file: File | undefined) {
     @drop="handleDrop"
   >
     <div class="dropzone">
-      <p>将 .json 徽章文件拖拽到此处，或点击按钮选择文件。</p>
-      <label class="upload-label" for="json-upload">选择徽章文件</label>
+      <p>将 .json 纪念章文件拖拽到此处，或点击按钮选择文件。</p>
+      <label class="upload-label" for="json-upload">选择纪念章文件</label>
       <input
         id="json-upload"
         ref="fileInput"

@@ -26,7 +26,7 @@ async function processJsonFile(file: File) {
     errorMessage.value = '';
   } catch (error) {
     console.error('Error processing file:', error);
-    errorMessage.value = '文件处理错误，请确保选择的是有效的徽章文件';
+    errorMessage.value = '文件处理错误，请确保选择的是有效的纪念章文件';
     verificationResult.value = null;
     badgeInfo.value = null;
   }
@@ -36,8 +36,8 @@ async function processJsonFile(file: File) {
 <template>
   <div class="app-container">
     <header>
-      <h1>验收你的网协徽章！</h1>
-      <p>请选择一个 .json 文件来验证你的徽章</p>
+      <h1>验收你的网协纪念章！</h1>
+      <p>请选择一个 .json 文件来验证你的纪念章</p>
     </header>
 
     <main>
@@ -52,18 +52,18 @@ async function processJsonFile(file: File) {
       <div v-if="verificationResult !== null" class="verification-result">
         <div v-if="verificationResult" class="success-message">
           <h2>✅ 验证通过！</h2>
-          <p>此徽章真实有效</p>
+          <p>此纪念章真实有效</p>
         </div>
         <div v-else class="error-message">
           <h2>❌ 验证失败！</h2>
-          <p>徽章可能是假的或者已被篡改</p>
-          <p>请联系徽章发放者进行核实</p>
+          <p>纪念章可能是假的或者已被篡改</p>
+          <p>请联系纪念章发放者进行核实</p>
         </div>
 
-        <!-- 徽章信息展示 -->
+        <!-- 纪念章信息展示 -->
         <div v-if="badgeInfo" :class="['badge-info', { 'invalid': !verificationResult }]">
           <div class="badge-layout">
-            <!-- 左列：徽章图片和标题 -->
+            <!-- 左列：纪念章图片和标题 -->
             <div class="badge-left-column">
               <div class="badge-image">
                 <span class="badge-emoji">🏅</span>
@@ -175,7 +175,7 @@ p {
   font-size: 1.5rem;
 }
 
-/* 徽章信息样式 */
+/* 纪念章信息样式 */
 .badge-info {
   margin-top: 2rem;
 }
@@ -187,7 +187,7 @@ p {
   align-items: start;
 }
 
-/* 左列：徽章图片和标题 */
+/* 左列：纪念章图片和标题 */
 .badge-left-column {
   display: flex;
   flex-direction: column;
@@ -279,7 +279,7 @@ p {
   width: 100%;
 }
 
-/* 无效徽章的样式 */
+/* 无效纪念章的样式 */
 .badge-info.invalid .value {
   text-decoration: line-through;
   color: #94a3b8;
