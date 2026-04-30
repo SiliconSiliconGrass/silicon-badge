@@ -69,9 +69,11 @@ class BadgeGenerator:
     def save_badge(self, badge_data: dict, filename: str = None):
         """保存纪念章到文件"""
         if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             member_name = badge_data["badge"]["member_name"]
-            filename = f"badges/{member_name}_{timestamp}.json"
+            student_id = badge_data["badge"]["member_student_id"]
+            title = badge_data["badge"]["badge_title"]
+            filename = f"badges/{student_id}_{member_name}_{title}.json"
         
         os.makedirs("badges", exist_ok=True)
         
